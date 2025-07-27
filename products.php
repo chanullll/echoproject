@@ -141,6 +141,43 @@ function getProductEmoji($category) {
     ];
     return $emojis[$category] ?? '🌱';
 }
+
+// Function to get logo link based on user role
+function getLogoLink($user) {
+    if (!$user['logged_in']) {
+        return 'index.php';
+    }
+    
+    switch ($user['role']) {
+        case 'admin':
+            return 'admin_dashboard.php';
+        case 'buyer':
+        default:
+            return 'products.php';
+    }
+}
+
+// Handle add to cart
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_to_cart') {
+    $productId = (int)$_POST['product_id'];
+    $quantity = (int)$_POST['quantity'];
+    
+    if (!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
+    }
+    
+    if (isset($_SESSION['cart'][$productId])) {
+        $_SESSION['cart'][$productId] += $quantity;
+    } else {
+        $_SESSION['cart'][$productId] = $quantity;
+    }
+    
+    // Redirect to prevent form resubmission
+    header('Location: products.php?added=' . $productId);
+    exit;
+}
+
+$addedProduct = $_GET['added'] ?? null;
 ?>
 
 <!DOCTYPE html>
@@ -176,18 +213,23 @@ function getProductEmoji($category) {
     <header class="bg-white shadow-lg sticky top-0 z-50">
         <nav class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2">
+                <a href="<?php echo getLogoLink($_SESSION['user']); ?>" class="flex items-center space-x-2 hover:opacity-80 transition-opacity">
                     <span class="text-2xl">🌱</span>
                     <h1 class="text-2xl font-bold text-eco-green">Eco Store</h1>
-                </div>
+                </a>
                 
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-6">
                     <a href="index.php" class="nav-link">Home</a>
                     <a href="products.php" class="nav-link active">Products</a>
+                    <a href="cart.php" class="nav-link">Cart (<?php echo isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0; ?>)</a>
                     <a href="leaderboard.php" class="nav-link">Leaderboard</a>
-                    <a href="dashboard.php" class="nav-link">Dashboard</a>
                     <?php if ($_SESSION['user']['logged_in']): ?>
+                        <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+                            <a href="admin_dashboard.php" class="nav-link">Admin</a>
+                        <?php else: ?>
+                            <a href="user_dashboard.php" class="nav-link">Dashboard</a>
+                        <?php endif; ?>
                         <a href="auth.php?action=logout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">Logout</a>
                     <?php else: ?>
                         <a href="auth.php" class="bg-eco-green text-white px-4 py-2 rounded-lg hover:bg-eco-dark transition-colors">Login</a>
@@ -207,9 +249,14 @@ function getProductEmoji($category) {
                 <div class="flex flex-col space-y-2">
                     <a href="index.php" class="nav-link py-2 px-4 rounded-lg">Home</a>
                     <a href="products.php" class="nav-link active py-2 px-4 rounded-lg">Products</a>
+                    <a href="cart.php" class="nav-link py-2 px-4 rounded-lg">Cart (<?php echo isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0; ?>)</a>
                     <a href="leaderboard.php" class="nav-link py-2 px-4 rounded-lg">Leaderboard</a>
-                    <a href="dashboard.php" class="nav-link py-2 px-4 rounded-lg">Dashboard</a>
                     <?php if ($_SESSION['user']['logged_in']): ?>
+                        <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+                            <a href="admin_dashboard.php" class="nav-link py-2 px-4 rounded-lg">Admin</a>
+                        <?php else: ?>
+                            <a href="user_dashboard.php" class="nav-link py-2 px-4 rounded-lg">Dashboard</a>
+                        <?php endif; ?>
                         <a href="auth.php?action=logout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-center">Logout</a>
                     <?php else: ?>
                         <a href="auth.php" class="bg-eco-green text-white px-4 py-2 rounded-lg hover:bg-eco-dark transition-colors text-center">Login</a>
@@ -218,6 +265,13 @@ function getProductEmoji($category) {
             </div>
         </nav>
     </header>
+
+    <!-- Success Message -->
+    <?php if ($addedProduct): ?>
+        <div class="bg-green-100 border-green-400 text-green-700 px-4 py-3 text-center animate-fade-in">
+            Product added to cart successfully! <a href="cart.php" class="underline font-semibold">View Cart</a>
+        </div>
+    <?php endif; ?>
 
     <!-- Search and Filter Section -->
     <section class="bg-white shadow-sm py-6" data-animate="fade-up">
@@ -272,21 +326,39 @@ function getProductEmoji($category) {
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" data-animate="fade-up">
                     <?php foreach ($currentProducts as $product): ?>
                         <?php $badge = getCarbonBadge($product['co2_saved']); ?>
-                        <a href="product.php?id=<?php echo $product['id']; ?>" class="product-card" data-animate="fade-up" data-delay="<?php echo $index * 0.1; ?>s">
-                            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                        <div class="product-card bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:scale-105" data-animate="fade-up" data-delay="<?php echo array_search($product, $currentProducts) * 0.1; ?>s">
+                            <a href="product.php?id=<?php echo $product['id']; ?>">
                                 <div class="h-48 bg-gradient-to-br from-green-200 to-green-300 relative flex items-center justify-center">
                                     <span class="text-4xl"><?php echo getProductEmoji($product['category']); ?></span>
                                     <div class="absolute top-3 right-3 carbon-badge <?php echo $badge['class']; ?> text-white px-2 py-1 rounded-full text-xs font-semibold animate-pulse-eco">
                                         <?php echo $badge['emoji']; ?> <?php echo $product['co2_saved']; ?>kg CO₂
                                     </div>
                                 </div>
-                                <div class="p-4">
-                                    <h4 class="font-semibold text-gray-800 mb-2"><?php echo htmlspecialchars($product['name']); ?></h4>
+                            </a>
+                            <div class="p-4">
+                                <a href="product.php?id=<?php echo $product['id']; ?>">
+                                    <h4 class="font-semibold text-gray-800 mb-2 hover:text-eco-green transition-colors"><?php echo htmlspecialchars($product['name']); ?></h4>
                                     <p class="text-eco-green font-bold text-lg">$<?php echo number_format($product['price'], 2); ?></p>
-                                    <p class="text-sm text-gray-600">Saves <?php echo $product['co2_saved']; ?> kg CO₂ per year</p>
-                                </div>
+                                    <p class="text-sm text-gray-600 mb-3">Saves <?php echo $product['co2_saved']; ?> kg CO₂ per year</p>
+                                </a>
+                                
+                                <!-- Add to Cart Form -->
+                                <form method="POST" class="flex items-center space-x-2">
+                                    <input type="hidden" name="action" value="add_to_cart">
+                                    <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                                    <select name="quantity" class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-eco-green focus:border-transparent">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                    </select>
+                                    <button type="submit" class="bg-eco-green text-white px-3 py-1 rounded text-sm hover:bg-eco-dark transition-all duration-300 transform hover:scale-105">
+                                        Add to Cart
+                                    </button>
+                                </form>
                             </div>
-                        </a>
+                        </div>
                     <?php endforeach; ?>
                 </div>
                 

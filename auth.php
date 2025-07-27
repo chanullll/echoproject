@@ -17,8 +17,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
         
-        // Simple validation (in real app, check against database)
-        if ($email && $password) {
+        // Check for hardcoded admin account
+        if ($email === 'admin@ecostore.com' && $password === 'admin123') {
+            $_SESSION['user'] = [
+                'name' => 'Administrator',
+                'email' => $email,
+                'role' => 'admin',
+                'co2_saved' => 0,
+                'logged_in' => true
+            ];
+            header('Location: admin_dashboard.php');
+            exit;
+        }
+        // Regular user login
+        elseif ($email && $password) {
             $_SESSION['user'] = [
                 'name' => 'John Doe',
                 'email' => $email,
@@ -26,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'co2_saved' => 20.2,
                 'logged_in' => true
             ];
-            header('Location: dashboard.php');
+            header('Location: user_dashboard.php');
             exit;
         } else {
             $error = 'Please fill in all fields.';
@@ -48,7 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'co2_saved' => 0,
                 'logged_in' => true
             ];
-            header('Location: dashboard.php');
+            // Redirect based on role
+            if ($role === 'admin') {
+                header('Location: admin_dashboard.php');
+            } else {
+                header('Location: user_dashboard.php');
+            }
             exit;
         } else {
             $error = 'Please fill in all required fields.';
@@ -58,8 +75,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // If already logged in, redirect to dashboard
 if (isset($_SESSION['user']) && $_SESSION['user']['logged_in']) {
-    header('Location: dashboard.php');
+    if ($_SESSION['user']['role'] === 'admin') {
+        header('Location: admin_dashboard.php');
+    } else {
+        header('Location: user_dashboard.php');
+    }
     exit;
+}
+
+// Function to get logo link based on user role
+function getLogoLink($user) {
+    if (!$user['logged_in']) {
+        return 'index.php';
+    }
+    
+    switch ($user['role']) {
+        case 'admin':
+            return 'admin_dashboard.php';
+        case 'buyer':
+        default:
+            return 'products.php';
+    }
 }
 ?>
 
@@ -98,10 +134,10 @@ if (isset($_SESSION['user']) && $_SESSION['user']['logged_in']) {
     <header class="bg-white shadow-lg sticky top-0 z-50">
         <nav class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2">
+                <a href="index.php" class="flex items-center space-x-2 hover:opacity-80 transition-opacity">
                     <span class="text-2xl">🌱</span>
                     <h1 class="text-2xl font-bold text-eco-green">Eco Store</h1>
-                </div>
+                </a>
                 
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-6">

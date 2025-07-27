@@ -12,6 +12,21 @@ if (!isset($_SESSION['user'])) {
 }
 
 // Handle contact form submission
+
+// Function to get logo link based on user role
+function getLogoLink($user) {
+    if (!$user['logged_in']) {
+        return 'index.php';
+    }
+    
+    switch ($user['role']) {
+        case 'admin':
+            return 'admin_dashboard.php';
+        case 'buyer':
+        default:
+            return 'products.php';
+    }
+}
 $success = '';
 $error = '';
 
@@ -62,10 +77,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <header class="bg-white shadow-lg sticky top-0 z-50">
         <nav class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2">
+                <a href="<?php echo getLogoLink($_SESSION['user']); ?>" class="flex items-center space-x-2 hover:opacity-80 transition-opacity">
                     <span class="text-2xl">🌱</span>
                     <h1 class="text-2xl font-bold text-eco-green">Eco Store</h1>
-                </div>
+                </a>
                 
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-6">
@@ -74,7 +89,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <a href="leaderboard.php" class="nav-link">Leaderboard</a>
                     <?php if ($_SESSION['user']['logged_in']): ?>
                         <a href="products.php" class="nav-link">Products</a>
-                        <a href="dashboard.php" class="nav-link">Dashboard</a>
+                        <a href="cart.php" class="nav-link">Cart (<?php echo isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0; ?>)</a>
+                        <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+                            <a href="admin_dashboard.php" class="nav-link">Admin</a>
+                        <?php else: ?>
+                            <a href="user_dashboard.php" class="nav-link">Dashboard</a>
+                        <?php endif; ?>
                         <a href="auth.php?action=logout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">Logout</a>
                     <?php else: ?>
                         <a href="auth.php" class="bg-eco-green text-white px-4 py-2 rounded-lg hover:bg-eco-dark transition-colors">Login</a>
@@ -97,7 +117,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <a href="leaderboard.php" class="nav-link py-2 px-4 rounded-lg">Leaderboard</a>
                     <?php if ($_SESSION['user']['logged_in']): ?>
                         <a href="products.php" class="nav-link py-2 px-4 rounded-lg">Products</a>
-                        <a href="dashboard.php" class="nav-link py-2 px-4 rounded-lg">Dashboard</a>
+                        <a href="cart.php" class="nav-link py-2 px-4 rounded-lg">Cart (<?php echo isset($_SESSION['cart']) ? array_sum($_SESSION['cart']) : 0; ?>)</a>
+                        <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+                            <a href="admin_dashboard.php" class="nav-link py-2 px-4 rounded-lg">Admin</a>
+                        <?php else: ?>
+                            <a href="user_dashboard.php" class="nav-link py-2 px-4 rounded-lg">Dashboard</a>
+                        <?php endif; ?>
                         <a href="auth.php?action=logout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-center">Logout</a>
                     <?php else: ?>
                         <a href="auth.php" class="bg-eco-green text-white px-4 py-2 rounded-lg hover:bg-eco-dark transition-colors text-center">Login</a>
@@ -270,7 +295,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <a href="leaderboard.php" class="block text-gray-400 hover:text-white">Leaderboard</a>
                         <?php if ($_SESSION['user']['logged_in']): ?>
                             <a href="products.php" class="block text-gray-400 hover:text-white">Products</a>
-                            <a href="dashboard.php" class="block text-gray-400 hover:text-white">Dashboard</a>
+                            <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+                                <a href="admin_dashboard.php" class="block text-gray-400 hover:text-white">Admin</a>
+                            <?php else: ?>
+                                <a href="user_dashboard.php" class="block text-gray-400 hover:text-white">Dashboard</a>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </div>
                 </div>
