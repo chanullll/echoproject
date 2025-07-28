@@ -16,7 +16,7 @@ class Database {
         $this->port = $_ENV['DB_PORT'] ?? '5432';
         $this->database = $_ENV['DB_NAME'] ?? 'eco_store';
         $this->username = $_ENV['DB_USER'] ?? 'postgres';
-        $this->password = $_ENV['DB_PASSWORD'] ?? '';
+        $this->password = $_ENV['DB_PASSWORD'] ?? '1234';
         
         $this->connect();
     }
