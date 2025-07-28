@@ -107,6 +107,9 @@ function getLogoLink($user) {
     <title>Login & Register - Eco Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="assets/css/animations.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -129,14 +132,14 @@ function getLogoLink($user) {
         .auth-form.active { display: block; }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 min-h-screen">
     <!-- Header -->
-    <header class="bg-white shadow-lg sticky top-0 z-50">
+    <header class="nav-modern sticky top-0 z-50">
         <nav class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
                 <a href="index.php" class="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-                    <span class="text-2xl">🌱</span>
-                    <h1 class="text-2xl font-bold text-eco-green">Eco Store</h1>
+                    <span class="text-3xl floating">🌱</span>
+                    <h1 class="text-2xl font-bold gradient-text">Eco Store</h1>
                 </a>
                 
                 <!-- Desktop Navigation -->
@@ -168,83 +171,90 @@ function getLogoLink($user) {
     </header>
 
     <!-- Auth Section -->
-    <section class="py-12 min-h-screen flex items-center" data-animate="fade-up">
+    <section class="py-16 min-h-screen flex items-center relative overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute inset-0">
+            <div class="absolute top-20 left-10 w-32 h-32 bg-emerald-200 bg-opacity-30 rounded-full morph-shape"></div>
+            <div class="absolute bottom-20 right-10 w-48 h-48 bg-green-200 bg-opacity-20 rounded-full morph-shape" style="animation-delay: -2s;"></div>
+            <div class="absolute top-1/2 left-1/3 w-24 h-24 bg-teal-200 bg-opacity-25 rounded-full floating"></div>
+        </div>
+        
         <div class="container mx-auto px-4">
-            <div class="max-w-md mx-auto">
+            <div class="max-w-lg mx-auto relative z-10">
                 <!-- Error/Success Messages -->
                 <?php if ($error): ?>
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    <div class="glass-card bg-red-50 border-2 border-red-200 text-red-700 px-6 py-4 rounded-2xl mb-6 reveal">
                         <?php echo htmlspecialchars($error); ?>
                     </div>
                 <?php endif; ?>
                 
                 <?php if ($success): ?>
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                    <div class="glass-card bg-green-50 border-2 border-green-200 text-green-700 px-6 py-4 rounded-2xl mb-6 reveal">
                         <?php echo htmlspecialchars($success); ?>
                     </div>
                 <?php endif; ?>
 
                 <!-- Tab Navigation -->
-                <div class="flex mb-6 bg-gray-200 rounded-lg p-1" data-animate="fade-up" data-delay="0.2s">
-                    <button id="loginTab" onclick="switchToLogin()" class="flex-1 py-2 px-4 rounded-md font-semibold transition-all duration-300 auth-tab active transform hover:scale-105">
+                <div class="flex mb-8 glass-card rounded-2xl p-2 reveal">
+                    <button id="loginTab" onclick="switchToLogin()" class="flex-1 py-3 px-6 rounded-xl font-bold transition-all duration-300 auth-tab active magnetic">
                         Login
                     </button>
-                    <button id="registerTab" onclick="switchToRegister()" class="flex-1 py-2 px-4 rounded-md font-semibold transition-all duration-300 auth-tab transform hover:scale-105">
+                    <button id="registerTab" onclick="switchToRegister()" class="flex-1 py-3 px-6 rounded-xl font-bold transition-all duration-300 auth-tab magnetic">
                         Register
                     </button>
                 </div>
 
                 <!-- Login Form -->
-                <div id="loginForm" class="auth-form active" data-animate="fade-up" data-delay="0.4s">
-                    <div class="bg-white rounded-xl shadow-lg p-8 transition-all duration-300 hover:shadow-xl">
+                <div id="loginForm" class="auth-form active reveal">
+                    <div class="glass-card bg-white/80 backdrop-blur-xl rounded-3xl p-10 card-stack">
                         <div class="text-center mb-8">
-                            <span class="text-4xl block mb-4 animate-wiggle">🌱</span>
-                            <h2 class="text-2xl font-bold text-gray-800">Welcome Back</h2>
-                            <p class="text-gray-600">Sign in to your eco-friendly account</p>
+                            <div class="text-6xl mb-6 floating">🌱</div>
+                            <h2 class="text-3xl font-bold gradient-text mb-2">Welcome Back</h2>
+                            <p class="text-gray-600 text-lg">Sign in to your eco-friendly account</p>
                         </div>
 
-                        <form method="POST" class="space-y-6">
+                        <form method="POST" class="space-y-6 stagger-container">
                             <input type="hidden" name="action" value="login">
                             
-                            <div>
-                                <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                            <div class="stagger-item">
+                                <label for="loginEmail" class="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
                                 <div class="relative">
                                     <input type="email" name="email" id="loginEmail" required 
-                                           class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-green focus:border-transparent transition-all duration-300">
-                                    <svg class="absolute left-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                           class="w-full px-6 py-4 pl-12 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm">
+                                    <svg class="absolute left-4 top-4.5 w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
                                     </svg>
                                 </div>
                             </div>
 
-                            <div>
-                                <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <div class="stagger-item">
+                                <label for="loginPassword" class="block text-sm font-semibold text-gray-700 mb-2">Password</label>
                                 <div class="relative">
                                     <input type="password" name="password" id="loginPassword" required 
-                                           class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-green focus:border-transparent transition-all duration-300">
-                                    <svg class="absolute left-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                           class="w-full px-6 py-4 pl-12 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm">
+                                    <svg class="absolute left-4 top-4.5 w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                     </svg>
                                 </div>
                             </div>
 
-                            <div class="flex items-center justify-between">
+                            <div class="stagger-item flex items-center justify-between">
                                 <label class="flex items-center">
-                                    <input type="checkbox" class="w-4 h-4 text-eco-green border-gray-300 rounded focus:ring-eco-green">
+                                    <input type="checkbox" class="w-5 h-5 text-emerald-600 border-gray-300 rounded-lg focus:ring-emerald-500">
                                     <span class="ml-2 text-sm text-gray-600">Remember me</span>
                                 </label>
-                                <a href="#" class="text-sm text-eco-green hover:text-eco-dark">Forgot password?</a>
+                                <a href="#" class="text-sm text-emerald-600 hover:text-emerald-700 font-semibold">Forgot password?</a>
                             </div>
 
-                            <button type="submit" class="w-full bg-eco-green text-white py-3 rounded-lg font-semibold hover:bg-eco-dark transition-all duration-300 transform hover:scale-105">
-                                Sign In
+                            <button type="submit" class="stagger-item w-full btn-modern py-4 text-lg rounded-2xl glow-on-hover">
+                                <span class="mr-2">🚀</span>Sign In
                             </button>
                         </form>
 
                         <div class="mt-6 text-center">
-                            <p class="text-sm text-gray-600">
+                            <p class="text-gray-600">
                                 New to Eco Store? 
-                                <button class="text-eco-green hover:text-eco-dark font-semibold" onclick="switchToRegister()">Create account</button>
+                                <button class="text-emerald-600 hover:text-emerald-700 font-bold magnetic" onclick="switchToRegister()">Create account</button>
                             </p>
                         </div>
                     </div>
@@ -252,22 +262,22 @@ function getLogoLink($user) {
 
                 <!-- Register Form -->
                 <div id="registerForm" class="auth-form">
-                    <div class="bg-white rounded-xl shadow-lg p-8 transition-all duration-300 hover:shadow-xl">
+                    <div class="glass-card bg-white/80 backdrop-blur-xl rounded-3xl p-10 card-stack">
                         <div class="text-center mb-8">
-                            <span class="text-4xl block mb-4 animate-wiggle">🌱</span>
-                            <h2 class="text-2xl font-bold text-gray-800">Join Eco Store</h2>
-                            <p class="text-gray-600">Start your sustainable journey today</p>
+                            <div class="text-6xl mb-6 floating">🌱</div>
+                            <h2 class="text-3xl font-bold gradient-text mb-2">Join Eco Store</h2>
+                            <p class="text-gray-600 text-lg">Start your sustainable journey today</p>
                         </div>
 
-                        <form method="POST" class="space-y-6">
+                        <form method="POST" class="space-y-6 stagger-container">
                             <input type="hidden" name="action" value="register">
                             
-                            <div>
-                                <label for="registerName" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                            <div class="stagger-item">
+                                <label for="registerName" class="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
                                 <div class="relative">
                                     <input type="text" name="name" id="registerName" required 
-                                           class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-green focus:border-transparent transition-all duration-300">
-                                    <svg class="absolute left-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                           class="w-full px-6 py-4 pl-12 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm">
+                                    <svg class="absolute left-4 top-4.5 w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                     </svg>
                                 </div>
@@ -319,15 +329,15 @@ function getLogoLink($user) {
                                 <span class="ml-2 text-sm text-gray-600">I agree to the <a href="#" class="text-eco-green hover:text-eco-dark">Terms of Service</a> and <a href="#" class="text-eco-green hover:text-eco-dark">Privacy Policy</a></span>
                             </div>
 
-                            <button type="submit" class="w-full bg-eco-green text-white py-3 rounded-lg font-semibold hover:bg-eco-dark transition-all duration-300 transform hover:scale-105">
-                                Create Account
+                            <button type="submit" class="stagger-item w-full btn-modern py-4 text-lg rounded-2xl glow-on-hover">
+                                <span class="mr-2">✨</span>Create Account
                             </button>
                         </form>
 
                         <div class="mt-6 text-center">
-                            <p class="text-sm text-gray-600">
+                            <p class="text-gray-600">
                                 Already have an account? 
-                                <button class="text-eco-green hover:text-eco-dark font-semibold" onclick="switchToLogin()">Sign in</button>
+                                <button class="text-emerald-600 hover:text-emerald-700 font-bold magnetic" onclick="switchToLogin()">Sign in</button>
                             </p>
                         </div>
                     </div>
@@ -391,6 +401,15 @@ function getLogoLink($user) {
         }
 
         function switchToLogin() {
+            // Add animation class
+            document.getElementById('loginForm').style.transform = 'translateX(-100%)';
+            document.getElementById('registerForm').style.transform = 'translateX(0)';
+            
+            setTimeout(() => {
+                document.getElementById('loginForm').style.transform = 'translateX(0)';
+                document.getElementById('registerForm').style.transform = 'translateX(100%)';
+            }, 150);
+            
             document.getElementById('loginTab').classList.add('active');
             document.getElementById('registerTab').classList.remove('active');
             document.getElementById('loginForm').classList.add('active', 'animate-fade-in');
@@ -398,6 +417,15 @@ function getLogoLink($user) {
         }
 
         function switchToRegister() {
+            // Add animation class
+            document.getElementById('registerForm').style.transform = 'translateX(100%)';
+            document.getElementById('loginForm').style.transform = 'translateX(0)';
+            
+            setTimeout(() => {
+                document.getElementById('registerForm').style.transform = 'translateX(0)';
+                document.getElementById('loginForm').style.transform = 'translateX(-100%)';
+            }, 150);
+            
             document.getElementById('registerTab').classList.add('active');
             document.getElementById('loginTab').classList.remove('active');
             document.getElementById('registerForm').classList.add('active', 'animate-fade-in');
