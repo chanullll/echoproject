@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once 'config/database.php';
 
 // Initialize user session if not exists
 if (!isset($_SESSION['user'])) {
@@ -11,49 +12,21 @@ if (!isset($_SESSION['user'])) {
     ];
 }
 
-// Sample product data
-$products = [
-    [
-        'id' => 1,
-        'name' => 'Solar Power Bank',
-        'price' => 49.99,
-        'co2_saved' => 3.2,
-        'category' => 'energy',
-        'description' => 'High-capacity solar power bank with renewable charging capability.',
-        'seller' => 'EcoTech Solutions',
-        'sales' => 12
-    ],
-    [
-        'id' => 2,
-        'name' => 'Bamboo Water Bottle',
-        'price' => 24.99,
-        'co2_saved' => 1.8,
-        'category' => 'reusables',
-        'description' => 'Sustainable bamboo water bottle with leak-proof design.',
-        'seller' => 'Green Living Co.',
-        'sales' => 18
-    ],
-    [
-        'id' => 3,
-        'name' => 'Eco Detergent Set',
-        'price' => 34.99,
-        'co2_saved' => 2.5,
-        'category' => 'home',
-        'description' => 'Natural cleaning products made from organic ingredients.',
-        'seller' => 'Pure Clean',
-        'sales' => 25
-    ],
-    [
-        'id' => 4,
-        'name' => 'Reusable Food Wraps',
-        'price' => 19.99,
-        'co2_saved' => 0.8,
-        'category' => 'reusables',
-        'description' => 'Beeswax food wraps to replace plastic wrap.',
-        'seller' => 'Bee Sustainable',
-        'sales' => 45
-    ]
-];
+// Fetch products from database
+try {
+    $products = $db->fetchAll("
+        SELECT p.*, c.slug as category, u.name as seller 
+        FROM products p 
+        LEFT JOIN categories c ON p.category_id = c.id 
+        LEFT JOIN users u ON p.seller_id = u.id 
+        WHERE p.is_active = true 
+        ORDER BY p.created_at DESC 
+        LIMIT 4
+    ");
+} catch (Exception $e) {
+    $products = [];
+    error_log("Error fetching products: " . $e->getMessage());
+}
 
 // Function to get carbon badge
 function getCarbonBadge($co2Amount) {
@@ -94,7 +67,7 @@ function getLogoLink($user) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eco Store - Shop Sustainably, Save the Planet</title>
+    <title>🌱 Eco Store - Shop Sustainably, Save the Planet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="assets/css/animations.css">
     <script>
@@ -102,9 +75,15 @@ function getLogoLink($user) {
             theme: {
                 extend: {
                     colors: {
-                        'eco-green': '#059669',
-                        'eco-light': '#10b981',
-                        'eco-dark': '#047857'
+                        'eco-green': '#16a34a',
+                        'eco-light': '#22c55e',
+                        'eco-dark': '#15803d',
+                        'eco-accent': '#84cc16',
+                        'eco-secondary': '#06b6d4'
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate'
                     }
                 }
             }
@@ -115,6 +94,22 @@ function getLogoLink($user) {
         .nav-link.active { @apply text-eco-green font-semibold; }
         .product-card { @apply transition-all duration-300 ease-in-out; }
         .category-card { @apply transition-all duration-300 ease-in-out; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+            to { box-shadow: 0 0 30px rgba(34, 197, 94, 0.6); }
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -122,9 +117,9 @@ function getLogoLink($user) {
     <header class="bg-white shadow-lg sticky top-0 z-50">
         <nav class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
-                <a href="<?php echo getLogoLink($_SESSION['user']); ?>" class="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-                    <span class="text-2xl">🌱</span>
-                    <h1 class="text-2xl font-bold text-eco-green">Eco Store</h1>
+                <a href="<?php echo getLogoLink($_SESSION['user']); ?>" class="flex items-center space-x-3 hover:scale-105 transition-all duration-300 group">
+                    <span class="text-3xl animate-float group-hover:animate-glow">🌱</span>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-eco-green to-eco-accent bg-clip-text text-transparent">Eco Store</h1>
                 </a>
                 
                 <!-- Desktop Navigation -->
@@ -178,18 +173,53 @@ function getLogoLink($user) {
     </header>
 
     <!-- Hero Section -->
-    <section class="bg-gradient-to-r from-eco-green to-eco-light text-white py-20" data-animate="fade-up">
+    <section class="relative bg-gradient-to-br from-eco-green via-eco-light to-eco-secondary text-white py-24 overflow-hidden" data-animate="fade-up">
+        <!-- Animated background elements -->
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute top-10 left-10 w-20 h-20 bg-white rounded-full animate-float"></div>
+            <div class="absolute top-32 right-20 w-16 h-16 bg-eco-accent rounded-full animate-float" style="animation-delay: 1s;"></div>
+            <div class="absolute bottom-20 left-1/4 w-12 h-12 bg-white rounded-full animate-float" style="animation-delay: 2s;"></div>
+            <div class="absolute bottom-32 right-1/3 w-24 h-24 bg-eco-accent rounded-full animate-float" style="animation-delay: 0.5s;"></div>
+        </div>
+        
         <div class="container mx-auto px-4 text-center">
             <div class="max-w-4xl mx-auto">
-                <h2 class="text-5xl font-bold mb-6 leading-tight">Shop Sustainably, Save the Planet</h2>
-                <p class="text-xl mb-8 opacity-90" data-animate="fade-up" data-delay="0.2s">Every purchase counts. Join thousands making a difference with eco-friendly products that reduce carbon footprint.</p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <h2 class="text-6xl font-bold mb-8 leading-tight animate-fade-up">
+                    Shop Sustainably, 
+                    <span class="text-eco-accent animate-glow">Save the Planet</span>
+                </h2>
+                <p class="text-2xl mb-10 opacity-95 leading-relaxed" data-animate="fade-up" data-delay="0.2s">
+                    Every purchase counts. Join <span class="font-bold text-eco-accent">10,000+</span> eco-warriors making a difference with products that reduce carbon footprint.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
                     <?php if ($_SESSION['user']['logged_in']): ?>
-                        <a href="products.php" class="bg-white text-eco-green px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 hover:shadow-lg" data-animate="fade-up" data-delay="0.4s">Browse Products</a>
+                        <a href="products.php" class="bg-white text-eco-green px-10 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-110 hover:shadow-2xl animate-glow" data-animate="fade-up" data-delay="0.4s">
+                            🛍️ Browse Products
+                        </a>
                     <?php else: ?>
-                        <a href="auth.php" class="bg-white text-eco-green px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 hover:shadow-lg" data-animate="fade-up" data-delay="0.4s">Join Us Today</a>
+                        <a href="auth.php" class="bg-white text-eco-green px-10 py-4 rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-110 hover:shadow-2xl animate-glow" data-animate="fade-up" data-delay="0.4s">
+                            🚀 Join Us Today
+                        </a>
                     <?php endif; ?>
-                    <a href="leaderboard.php" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-eco-green transition-all duration-300 transform hover:scale-105" data-animate="fade-up" data-delay="0.6s">See Your Impact</a>
+                    <a href="leaderboard.php" class="glass-effect text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-white hover:text-eco-green transition-all duration-300 transform hover:scale-110 hover:shadow-2xl" data-animate="fade-up" data-delay="0.6s">
+                        📊 See Your Impact
+                    </a>
+                </div>
+                
+                <!-- Stats preview -->
+                <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8" data-animate="fade-up" data-delay="0.8s">
+                    <div class="glass-effect rounded-2xl p-6 transform hover:scale-105 transition-all duration-300">
+                        <div class="text-4xl font-bold text-eco-accent">15,847</div>
+                        <div class="text-lg opacity-90">kg CO₂ Saved</div>
+                    </div>
+                    <div class="glass-effect rounded-2xl p-6 transform hover:scale-105 transition-all duration-300">
+                        <div class="text-4xl font-bold text-eco-accent">2,847</div>
+                        <div class="text-lg opacity-90">Happy Customers</div>
+                    </div>
+                    <div class="glass-effect rounded-2xl p-6 transform hover:scale-105 transition-all duration-300">
+                        <div class="text-4xl font-bold text-eco-accent">156</div>
+                        <div class="text-lg opacity-90">Eco Products</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -198,38 +228,38 @@ function getLogoLink($user) {
     <!-- Featured Categories -->
     <section class="py-16 bg-white" data-animate="fade-up">
         <div class="container mx-auto px-4">
-            <h3 class="text-3xl font-bold text-center mb-12 text-gray-800" data-animate="fade-up">Shop by Category</h3>
+            <h3 class="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-gray-800 to-eco-green bg-clip-text text-transparent" data-animate="fade-up">Shop by Category</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <?php $categoryLink = $_SESSION['user']['logged_in'] ? 'products.php?category=reusables' : 'auth.php'; ?>
                 <a href="<?php echo $categoryLink; ?>" class="category-card" data-animate="fade-up" data-delay="0.1s">
-                    <div class="bg-gradient-to-br from-green-100 to-green-200 p-8 rounded-xl text-center hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-105">
-                        <span class="text-4xl mb-4 block">♻️</span>
-                        <h4 class="text-xl font-semibold text-gray-800 mb-2">Reusables</h4>
-                        <p class="text-gray-600">Bottles, bags, containers</p>
+                    <div class="bg-gradient-to-br from-green-100 to-green-200 p-10 rounded-2xl text-center hover:shadow-2xl transition-all duration-500 cursor-pointer transform hover:scale-110 hover:rotate-2 group">
+                        <span class="text-6xl mb-6 block group-hover:animate-bounce">♻️</span>
+                        <h4 class="text-2xl font-bold text-gray-800 mb-3">Reusables</h4>
+                        <p class="text-gray-700 text-lg">Bottles, bags, containers</p>
                     </div>
                 </a>
                 <?php $categoryLink = $_SESSION['user']['logged_in'] ? 'products.php?category=energy' : 'auth.php'; ?>
                 <a href="<?php echo $categoryLink; ?>" class="category-card" data-animate="fade-up" data-delay="0.2s">
-                    <div class="bg-gradient-to-br from-yellow-100 to-yellow-200 p-8 rounded-xl text-center hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-105">
-                        <span class="text-4xl mb-4 block">⚡</span>
-                        <h4 class="text-xl font-semibold text-gray-800 mb-2">Green Energy</h4>
-                        <p class="text-gray-600">Solar, wind, eco gadgets</p>
+                    <div class="bg-gradient-to-br from-yellow-100 to-yellow-200 p-10 rounded-2xl text-center hover:shadow-2xl transition-all duration-500 cursor-pointer transform hover:scale-110 hover:rotate-2 group">
+                        <span class="text-6xl mb-6 block group-hover:animate-bounce">⚡</span>
+                        <h4 class="text-2xl font-bold text-gray-800 mb-3">Green Energy</h4>
+                        <p class="text-gray-700 text-lg">Solar, wind, eco gadgets</p>
                     </div>
                 </a>
                 <?php $categoryLink = $_SESSION['user']['logged_in'] ? 'products.php?category=home' : 'auth.php'; ?>
                 <a href="<?php echo $categoryLink; ?>" class="category-card" data-animate="fade-up" data-delay="0.3s">
-                    <div class="bg-gradient-to-br from-blue-100 to-blue-200 p-8 rounded-xl text-center hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-105">
-                        <span class="text-4xl mb-4 block">🏠</span>
-                        <h4 class="text-xl font-semibold text-gray-800 mb-2">Home & Cleaning</h4>
-                        <p class="text-gray-600">Natural cleaners, organics</p>
+                    <div class="bg-gradient-to-br from-blue-100 to-blue-200 p-10 rounded-2xl text-center hover:shadow-2xl transition-all duration-500 cursor-pointer transform hover:scale-110 hover:rotate-2 group">
+                        <span class="text-6xl mb-6 block group-hover:animate-bounce">🏠</span>
+                        <h4 class="text-2xl font-bold text-gray-800 mb-3">Home & Cleaning</h4>
+                        <p class="text-gray-700 text-lg">Natural cleaners, organics</p>
                     </div>
                 </a>
                 <?php $categoryLink = $_SESSION['user']['logged_in'] ? 'products.php?category=personal' : 'auth.php'; ?>
                 <a href="<?php echo $categoryLink; ?>" class="category-card" data-animate="fade-up" data-delay="0.4s">
-                    <div class="bg-gradient-to-br from-purple-100 to-purple-200 p-8 rounded-xl text-center hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-105">
-                        <span class="text-4xl mb-4 block">💚</span>
-                        <h4 class="text-xl font-semibold text-gray-800 mb-2">Personal Care</h4>
-                        <p class="text-gray-600">Organic beauty, wellness</p>
+                    <div class="bg-gradient-to-br from-purple-100 to-purple-200 p-10 rounded-2xl text-center hover:shadow-2xl transition-all duration-500 cursor-pointer transform hover:scale-110 hover:rotate-2 group">
+                        <span class="text-6xl mb-6 block group-hover:animate-bounce">💚</span>
+                        <h4 class="text-2xl font-bold text-gray-800 mb-3">Personal Care</h4>
+                        <p class="text-gray-700 text-lg">Organic beauty, wellness</p>
                     </div>
                 </a>
             </div>
@@ -239,80 +269,182 @@ function getLogoLink($user) {
     <!-- Top Carbon Savers -->
     <section class="py-16 bg-gray-50" data-animate="fade-up">
         <div class="container mx-auto px-4">
-            <h3 class="text-3xl font-bold text-center mb-12 text-gray-800" data-animate="fade-up">Top Carbon Savers</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <?php foreach (array_slice($products, 0, 4) as $product): ?>
+            <h3 class="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-gray-800 to-eco-green bg-clip-text text-transparent" data-animate="fade-up">🌟 Top Carbon Savers</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <?php foreach ($products as $index => $product): ?>
                     <?php $badge = getCarbonBadge($product['co2_saved']); ?>
                     <?php $productLink = $_SESSION['user']['logged_in'] ? 'product.php?id=' . $product['id'] : 'auth.php'; ?>
-                    <a href="<?php echo $productLink; ?>" class="product-card" data-animate="fade-up" data-delay="<?php echo ($loop_index ?? 0) * 0.1; ?>s">
-                        <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:scale-105">
-                            <div class="h-48 bg-gradient-to-br from-green-200 to-green-300 relative flex items-center justify-center">
-                                <span class="text-4xl"><?php echo getProductEmoji($product['category']); ?></span>
-                                <div class="absolute top-3 right-3 carbon-badge <?php echo $badge['class']; ?> text-white px-2 py-1 rounded-full text-xs font-semibold animate-pulse-eco">
+                    <a href="<?php echo $productLink; ?>" class="product-card group" data-animate="fade-up" data-delay="<?php echo $index * 0.1; ?>s">
+                        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:scale-110 hover:-rotate-1 group-hover:animate-glow">
+                            <div class="h-56 bg-gradient-to-br from-green-200 via-green-300 to-eco-light relative flex items-center justify-center overflow-hidden">
+                                <!-- Animated background pattern -->
+                                <div class="absolute inset-0 opacity-20">
+                                    <div class="absolute top-2 left-2 w-4 h-4 bg-white rounded-full animate-ping"></div>
+                                    <div class="absolute bottom-4 right-4 w-3 h-3 bg-eco-accent rounded-full animate-pulse"></div>
+                                </div>
+                                <span class="text-6xl group-hover:scale-125 transition-transform duration-500"><?php echo getProductEmoji($product['category']); ?></span>
+                                <div class="absolute top-4 right-4 carbon-badge <?php echo $badge['class']; ?> text-white px-3 py-2 rounded-full text-sm font-bold animate-bounce shadow-lg">
                                     <?php echo $badge['emoji']; ?> <?php echo $product['co2_saved']; ?>kg CO₂
                                 </div>
                             </div>
-                            <div class="p-4">
-                                <h4 class="font-semibold text-gray-800 mb-2"><?php echo htmlspecialchars($product['name']); ?></h4>
-                                <p class="text-eco-green font-bold text-lg carbon-counter" data-target="<?php echo $product['price']; ?>">$<?php echo number_format($product['price'], 2); ?></p>
-                                <p class="text-sm text-gray-600">Saves <?php echo $product['co2_saved']; ?> kg CO₂ per year</p>
+                            <div class="p-6">
+                                <h4 class="font-bold text-gray-800 mb-3 text-lg group-hover:text-eco-green transition-colors"><?php echo htmlspecialchars($product['name']); ?></h4>
+                                <p class="text-eco-green font-bold text-2xl carbon-counter mb-2" data-target="<?php echo $product['price']; ?>">$<?php echo number_format($product['price'], 2); ?></p>
+                                <p class="text-base text-gray-700 font-medium">🌱 Saves <?php echo $product['co2_saved']; ?> kg CO₂ per year</p>
+                                <div class="mt-4 flex items-center justify-between">
+                                    <span class="text-sm text-gray-500">by <?php echo htmlspecialchars($product['seller']); ?></span>
+                                    <div class="flex items-center space-x-1">
+                                        <span class="text-yellow-400">⭐</span>
+                                        <span class="text-sm font-medium">4.8</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </a>
                 <?php endforeach; ?>
             </div>
+            
+            <!-- Call to action -->
+            <div class="text-center mt-16" data-animate="fade-up" data-delay="0.6s">
+                <?php if ($_SESSION['user']['logged_in']): ?>
+                    <a href="products.php" class="inline-flex items-center space-x-3 bg-gradient-to-r from-eco-green to-eco-accent text-white px-8 py-4 rounded-2xl font-bold text-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 animate-glow">
+                        <span>🛍️</span>
+                        <span>View All Products</span>
+                        <span>→</span>
+                    </a>
+                <?php else: ?>
+                    <a href="auth.php" class="inline-flex items-center space-x-3 bg-gradient-to-r from-eco-green to-eco-accent text-white px-8 py-4 rounded-2xl font-bold text-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 animate-glow">
+                        <span>🚀</span>
+                        <span>Start Shopping</span>
+                        <span>→</span>
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </section>
+
+    <!-- Environmental Impact Section -->
+    <section class="py-20 bg-gradient-to-br from-eco-green to-eco-secondary text-white relative overflow-hidden" data-animate="fade-up">
+        <!-- Animated background -->
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-20 left-20 w-32 h-32 bg-white rounded-full animate-float"></div>
+            <div class="absolute bottom-20 right-20 w-24 h-24 bg-eco-accent rounded-full animate-float" style="animation-delay: 1s;"></div>
+            <div class="absolute top-1/2 left-1/4 w-16 h-16 bg-white rounded-full animate-float" style="animation-delay: 2s;"></div>
+        </div>
+        
+        <div class="container mx-auto px-4 text-center relative z-10">
+            <h3 class="text-5xl font-bold mb-8" data-animate="fade-up">🌍 Our Global Impact</h3>
+            <p class="text-2xl mb-16 opacity-90" data-animate="fade-up" data-delay="0.2s">Together, we're making a real difference for our planet</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8" data-animate="fade-up" data-delay="0.4s">
+                <div class="glass-effect rounded-2xl p-8 transform hover:scale-110 transition-all duration-300">
+                    <div class="text-5xl mb-4">🌱</div>
+                    <div class="text-4xl font-bold text-eco-accent mb-2">15,847</div>
+                    <div class="text-lg">kg CO₂ Saved</div>
+                </div>
+                <div class="glass-effect rounded-2xl p-8 transform hover:scale-110 transition-all duration-300">
+                    <div class="text-5xl mb-4">🌳</div>
+                    <div class="text-4xl font-bold text-eco-accent mb-2">792</div>
+                    <div class="text-lg">Trees Equivalent</div>
+                </div>
+                <div class="glass-effect rounded-2xl p-8 transform hover:scale-110 transition-all duration-300">
+                    <div class="text-5xl mb-4">🚗</div>
+                    <div class="text-4xl font-bold text-eco-accent mb-2">39,618</div>
+                    <div class="text-lg">Miles Not Driven</div>
+                </div>
+                <div class="glass-effect rounded-2xl p-8 transform hover:scale-110 transition-all duration-300">
+                    <div class="text-5xl mb-4">⚡</div>
+                    <div class="text-4xl font-bold text-eco-accent mb-2">28,525</div>
+                    <div class="text-lg">kWh Saved</div>
+                </div>
+            </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-12">
+    <footer class="bg-gray-900 text-white py-16 relative overflow-hidden">
+        <!-- Animated background -->
+        <div class="absolute inset-0 opacity-5">
+            <div class="absolute top-10 left-10 w-20 h-20 bg-eco-green rounded-full animate-float"></div>
+            <div class="absolute bottom-10 right-10 w-16 h-16 bg-eco-accent rounded-full animate-float" style="animation-delay: 1s;"></div>
+        </div>
+        
         <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
                 <div>
-                    <div class="flex items-center space-x-2 mb-4">
-                        <span class="text-2xl">🌱</span>
-                        <h1 class="text-2xl font-bold text-eco-green">Eco Store</h1>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <span class="text-4xl animate-float">🌱</span>
+                        <h1 class="text-3xl font-bold bg-gradient-to-r from-eco-green to-eco-accent bg-clip-text text-transparent">Eco Store</h1>
                     </div>
-                    <p class="text-gray-400">Making sustainable shopping accessible for everyone.</p>
+                    <p class="text-gray-300 text-lg leading-relaxed">Making sustainable shopping accessible for everyone. Join our mission to create a greener future, one purchase at a time.</p>
+                    <div class="mt-6 flex space-x-4">
+                        <a href="#" class="w-12 h-12 bg-eco-green rounded-full flex items-center justify-center hover:bg-eco-light transition-colors transform hover:scale-110">
+                            <span class="text-xl">📘</span>
+                        </a>
+                        <a href="#" class="w-12 h-12 bg-eco-green rounded-full flex items-center justify-center hover:bg-eco-light transition-colors transform hover:scale-110">
+                            <span class="text-xl">🐦</span>
+                        </a>
+                        <a href="#" class="w-12 h-12 bg-eco-green rounded-full flex items-center justify-center hover:bg-eco-light transition-colors transform hover:scale-110">
+                            <span class="text-xl">📷</span>
+                        </a>
+                    </div>
                 </div>
                 <div>
-                    <h4 class="font-semibold mb-4">Quick Links</h4>
+                    <h4 class="font-bold mb-6 text-xl text-eco-accent">Quick Links</h4>
                     <div class="space-y-2">
-                        <a href="contact.php" class="block text-gray-400 hover:text-white">Contact</a>
-                        <a href="leaderboard.php" class="block text-gray-400 hover:text-white">Leaderboard</a>
+                        <a href="contact.php" class="block text-gray-300 hover:text-eco-accent transition-colors hover:translate-x-2 transform duration-300">📞 Contact</a>
+                        <a href="leaderboard.php" class="block text-gray-300 hover:text-eco-accent transition-colors hover:translate-x-2 transform duration-300">🏆 Leaderboard</a>
                         <?php if ($_SESSION['user']['logged_in']): ?>
-                            <a href="products.php" class="block text-gray-400 hover:text-white">Products</a>
+                            <a href="products.php" class="block text-gray-300 hover:text-eco-accent transition-colors hover:translate-x-2 transform duration-300">🛍️ Products</a>
                             <?php if ($_SESSION['user']['role'] === 'admin'): ?>
-                                <a href="admin_dashboard.php" class="block text-gray-400 hover:text-white">Admin</a>
+                                <a href="admin_dashboard.php" class="block text-gray-300 hover:text-eco-accent transition-colors hover:translate-x-2 transform duration-300">👑 Admin</a>
                             <?php else: ?>
-                                <a href="user_dashboard.php" class="block text-gray-400 hover:text-white">Dashboard</a>
+                                <a href="user_dashboard.php" class="block text-gray-300 hover:text-eco-accent transition-colors hover:translate-x-2 transform duration-300">📊 Dashboard</a>
                             <?php endif; ?>
                         <?php endif; ?>
                     </div>
                 </div>
                 <div>
-                    <h4 class="font-semibold mb-4">Categories</h4>
+                    <h4 class="font-bold mb-6 text-xl text-eco-accent">Categories</h4>
                     <div class="space-y-2">
                         <?php if ($_SESSION['user']['logged_in']): ?>
-                            <a href="products.php?category=reusables" class="block text-gray-400 hover:text-white">Reusables</a>
-                            <a href="products.php?category=energy" class="block text-gray-400 hover:text-white">Green Energy</a>
-                            <a href="products.php?category=home" class="block text-gray-400 hover:text-white">Home & Cleaning</a>
+                            <a href="products.php?category=reusables" class="block text-gray-300 hover:text-eco-accent transition-colors hover:translate-x-2 transform duration-300">♻️ Reusables</a>
+                            <a href="products.php?category=energy" class="block text-gray-300 hover:text-eco-accent transition-colors hover:translate-x-2 transform duration-300">⚡ Green Energy</a>
+                            <a href="products.php?category=home" class="block text-gray-300 hover:text-eco-accent transition-colors hover:translate-x-2 transform duration-300">🏠 Home & Cleaning</a>
+                            <a href="products.php?category=personal" class="block text-gray-300 hover:text-eco-accent transition-colors hover:translate-x-2 transform duration-300">💚 Personal Care</a>
                         <?php else: ?>
-                            <span class="block text-gray-500">Login to browse products</span>
+                            <span class="block text-gray-500 italic">🔒 Login to browse products</span>
                         <?php endif; ?>
                     </div>
                 </div>
                 <div>
-                    <h4 class="font-semibold mb-4">Contact</h4>
-                    <div class="space-y-2 text-gray-400">
-                        <p>📧 hello@ecostore.com</p>
-                        <p>📞 +1 (555) 123-4567</p>
-                        <p>🌍 Making Earth Greener</p>
+                    <h4 class="font-bold mb-6 text-xl text-eco-accent">Contact</h4>
+                    <div class="space-y-4 text-gray-300">
+                        <p class="flex items-center space-x-3 hover:text-eco-accent transition-colors">
+                            <span>📧</span>
+                            <span>hello@ecostore.com</span>
+                        </p>
+                        <p class="flex items-center space-x-3 hover:text-eco-accent transition-colors">
+                            <span>📞</span>
+                            <span>+1 (555) 123-4567</span>
+                        </p>
+                        <p class="flex items-center space-x-3 hover:text-eco-accent transition-colors">
+                            <span>🌍</span>
+                            <span>Making Earth Greener</span>
+                        </p>
+                        <div class="mt-6 p-4 bg-eco-green bg-opacity-20 rounded-xl">
+                            <p class="text-sm text-eco-accent font-semibold">🌱 Carbon-neutral shipping</p>
+                            <p class="text-sm text-gray-300">Free on orders over $50</p>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-                <p>&copy; 2025 Eco Store. All rights reserved. 🌱 Carbon-neutral shipping available.</p>
+            <div class="border-t border-gray-700 mt-12 pt-8 text-center">
+                <p class="text-gray-300 text-lg">
+                    &copy; 2025 <span class="text-eco-accent font-bold">Eco Store</span>. All rights reserved. 
+                    <span class="inline-block animate-float">🌱</span> 
+                    Making the world a better place, one purchase at a time.
+                </p>
             </div>
         </div>
     </footer>
