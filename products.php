@@ -188,9 +188,7 @@ $addedProduct = $_GET['added'] ?? null;
     <title>Products - Eco Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="assets/css/animations.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/animations.css">
     <script>
         tailwind.config = {
             theme: {
@@ -210,14 +208,14 @@ $addedProduct = $_GET['added'] ?? null;
         .product-card { @apply transition-all duration-300 ease-in-out; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-50 via-green-50 to-emerald-50 min-h-screen">
+<body class="bg-gray-50">
     <!-- Header -->
-    <header class="nav-modern sticky top-0 z-50">
+    <header class="bg-white shadow-lg sticky top-0 z-50">
         <nav class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
                 <a href="<?php echo getLogoLink($_SESSION['user']); ?>" class="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-                    <span class="text-3xl floating">🌱</span>
-                    <h1 class="text-2xl font-bold gradient-text">Eco Store</h1>
+                    <span class="text-2xl">🌱</span>
+                    <h1 class="text-2xl font-bold text-eco-green">Eco Store</h1>
                 </a>
                 
                 <!-- Desktop Navigation -->
@@ -276,23 +274,23 @@ $addedProduct = $_GET['added'] ?? null;
     <?php endif; ?>
 
     <!-- Search and Filter Section -->
-    <section class="glass-card mx-4 mt-6 rounded-2xl py-8 reveal">
+    <section class="bg-white shadow-sm py-6" data-animate="fade-up">
         <div class="container mx-auto px-4">
-            <form method="GET" class="flex flex-col lg:flex-row gap-6 items-center justify-between">
+            <form method="GET" class="flex flex-col lg:flex-row gap-4 items-center justify-between">
                 <!-- Search Bar -->
                 <div class="w-full lg:w-1/2">
                     <div class="relative">
                         <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Search eco-friendly products..." 
-                               class="w-full px-6 py-4 pl-12 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm">
-                        <svg class="absolute left-4 top-4.5 w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               class="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-green focus:border-transparent transition-all duration-300">
+                        <svg class="absolute left-3 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </div>
                 </div>
                 
                 <!-- Filters -->
-                <div class="flex flex-col sm:flex-row gap-4 w-full lg:w-auto stagger-container">
-                    <select name="category" class="stagger-item px-6 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm">
+                <div class="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                    <select name="category" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-green focus:border-transparent transition-all duration-300">
                         <option value="">All Categories</option>
                         <option value="reusables" <?php echo $category === 'reusables' ? 'selected' : ''; ?>>Reusables</option>
                         <option value="energy" <?php echo $category === 'energy' ? 'selected' : ''; ?>>Green Energy</option>
@@ -300,15 +298,15 @@ $addedProduct = $_GET['added'] ?? null;
                         <option value="personal" <?php echo $category === 'personal' ? 'selected' : ''; ?>>Personal Care</option>
                     </select>
                     
-                    <select name="sort" class="stagger-item px-6 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300 bg-white/80 backdrop-blur-sm">
+                    <select name="sort" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-eco-green focus:border-transparent transition-all duration-300">
                         <option value="relevance" <?php echo $sort === 'relevance' ? 'selected' : ''; ?>>Relevance</option>
                         <option value="price-low" <?php echo $sort === 'price-low' ? 'selected' : ''; ?>>Price: Low to High</option>
                         <option value="price-high" <?php echo $sort === 'price-high' ? 'selected' : ''; ?>>Price: High to Low</option>
                         <option value="carbon-high" <?php echo $sort === 'carbon-high' ? 'selected' : ''; ?>>Carbon Saved: High to Low</option>
                     </select>
                     
-                    <button type="submit" class="stagger-item btn-modern px-8 py-4 rounded-2xl glow-on-hover">
-                        <span class="mr-2">🔍</span>Filter
+                    <button type="submit" class="bg-eco-green text-white px-6 py-3 rounded-lg hover:bg-eco-dark transition-all duration-300 transform hover:scale-105">
+                        Filter
                     </button>
                 </div>
             </form>
@@ -316,64 +314,49 @@ $addedProduct = $_GET['added'] ?? null;
     </section>
 
     <!-- Products Grid -->
-    <section class="py-16">
+    <section class="py-12" data-animate="fade-up">
         <div class="container mx-auto px-4">
             <?php if (empty($currentProducts)): ?>
-                <div class="text-center py-20 reveal">
-                    <div class="text-8xl mb-8 floating">🔍</div>
-                    <h3 class="text-4xl font-bold gradient-text mb-4">No products found</h3>
-                    <p class="text-xl text-gray-600 mb-8">Try adjusting your search or filter criteria.</p>
-                    <a href="products.php" class="btn-modern px-8 py-3 rounded-full">
-                        <span class="mr-2">🔄</span>Reset Filters
-                    </a>
+                <div class="text-center py-12" data-animate="fade-up">
+                    <span class="text-6xl block mb-4">🔍</span>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">No products found</h3>
+                    <p class="text-gray-600">Try adjusting your search or filter criteria.</p>
                 </div>
             <?php else: ?>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 stagger-container">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" data-animate="fade-up">
                     <?php foreach ($currentProducts as $product): ?>
                         <?php $badge = getCarbonBadge($product['co2_saved']); ?>
-                        <div class="stagger-item product-card glass-card bg-white rounded-2xl overflow-hidden group">
+                        <div class="product-card bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:scale-105" data-animate="fade-up" data-delay="<?php echo array_search($product, $currentProducts) * 0.1; ?>s">
                             <a href="product.php?id=<?php echo $product['id']; ?>">
-                                <div class="h-56 bg-gradient-to-br from-emerald-200 via-green-300 to-teal-200 relative flex items-center justify-center overflow-hidden">
-                                    <div class="absolute inset-0 bg-gradient-to-br from-transparent to-black/5"></div>
-                                    <span class="text-6xl floating relative z-10"><?php echo getProductEmoji($product['category']); ?></span>
-                                    <div class="absolute top-4 right-4 carbon-badge bg-gradient-to-r from-emerald-500 to-green-600 text-white px-3 py-2 rounded-full text-sm font-bold pulse-glow">
+                                <div class="h-48 bg-gradient-to-br from-green-200 to-green-300 relative flex items-center justify-center">
+                                    <span class="text-4xl"><?php echo getProductEmoji($product['category']); ?></span>
+                                    <div class="absolute top-3 right-3 carbon-badge <?php echo $badge['class']; ?> text-white px-2 py-1 rounded-full text-xs font-semibold animate-pulse-eco">
                                         <?php echo $badge['emoji']; ?> <?php echo $product['co2_saved']; ?>kg CO₂
                                     </div>
-                                    <!-- Hover overlay -->
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                 </div>
                             </a>
-                            <div class="p-6">
+                            <div class="p-4">
                                 <a href="product.php?id=<?php echo $product['id']; ?>">
-                                    <h4 class="font-bold text-xl text-gray-800 mb-3 group-hover:text-emerald-600 transition-colors"><?php echo htmlspecialchars($product['name']); ?></h4>
-                                    <p class="text-emerald-600 font-bold text-2xl mb-2">$<?php echo number_format($product['price'], 2); ?></p>
-                                    <p class="text-gray-600 mb-4">Saves <?php echo $product['co2_saved']; ?> kg CO₂ per year</p>
+                                    <h4 class="font-semibold text-gray-800 mb-2 hover:text-eco-green transition-colors"><?php echo htmlspecialchars($product['name']); ?></h4>
+                                    <p class="text-eco-green font-bold text-lg">$<?php echo number_format($product['price'], 2); ?></p>
+                                    <p class="text-sm text-gray-600 mb-3">Saves <?php echo $product['co2_saved']; ?> kg CO₂ per year</p>
                                 </a>
                                 
                                 <!-- Add to Cart Form -->
-                                <form method="POST" class="flex items-center space-x-3">
+                                <form method="POST" class="flex items-center space-x-2">
                                     <input type="hidden" name="action" value="add_to_cart">
                                     <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
-                                    <select name="quantity" class="flex-1 px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
+                                    <select name="quantity" class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-eco-green focus:border-transparent">
                                         <option value="1">1</option>
                                         <option value="2">2</option>
                                         <option value="3">3</option>
                                         <option value="4">4</option>
                                         <option value="5">5</option>
                                     </select>
-                                    <button type="submit" class="btn-modern px-4 py-2 text-sm rounded-lg ripple">
-                                        <span class="mr-1">🛒</span>Add
+                                    <button type="submit" class="bg-eco-green text-white px-3 py-1 rounded text-sm hover:bg-eco-dark transition-all duration-300 transform hover:scale-105">
+                                        Add to Cart
                                     </button>
                                 </form>
-                                
-                                <!-- Product Stats -->
-                                <div class="mt-4 flex items-center justify-between text-sm text-gray-500">
-                                    <span>By <?php echo htmlspecialchars($product['seller']); ?></span>
-                                    <div class="flex items-center">
-                                        <span class="text-yellow-500">⭐⭐⭐⭐⭐</span>
-                                        <span class="ml-1">(<?php echo $product['sales']; ?>)</span>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -381,22 +364,18 @@ $addedProduct = $_GET['added'] ?? null;
                 
                 <!-- Pagination -->
                 <?php if ($totalPages > 1): ?>
-                    <div class="flex justify-center mt-16 reveal">
-                        <div class="flex space-x-3">
+                    <div class="flex justify-center mt-12">
+                        <div class="flex space-x-2">
                             <?php if ($page > 1): ?>
                                 <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page - 1])); ?>" 
-                                   class="glass-card px-6 py-3 rounded-full hover:bg-white/80 transition-all magnetic">
-                                   ← Previous
-                                </a>
+                                   class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Previous</a>
                             <?php endif; ?>
                             
-                            <span class="btn-modern px-6 py-3 rounded-full">Page <?php echo $page; ?> of <?php echo $totalPages; ?></span>
+                            <span class="px-4 py-2 bg-eco-green text-white rounded-lg">Page <?php echo $page; ?> of <?php echo $totalPages; ?></span>
                             
                             <?php if ($page < $totalPages): ?>
                                 <a href="?<?php echo http_build_query(array_merge($_GET, ['page' => $page + 1])); ?>" 
-                                   class="glass-card px-6 py-3 rounded-full hover:bg-white/80 transition-all magnetic">
-                                   Next →
-                                </a>
+                                   class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Next</a>
                             <?php endif; ?>
                         </div>
                     </div>
